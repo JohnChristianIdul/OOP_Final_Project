@@ -18,6 +18,7 @@ public class Connect {
     Connection conn;
 
     /*This function/method will connect to the database*/
+    //This comment is just to test if I can push and pull from the repository
     public Connect() {
         try {
             conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/inventorysystem", "root", "");
