@@ -95,18 +95,23 @@ public class Connect {
         Statement stmt;
         String sql=null;
         ResultSet rs;
-        
+        boolean check = checkExisting(i,inventoryName);
+        System.out.println(check);
         try {
             stmt = conn.createStatement();
             sql = "select count(*) from " + inventoryName;
             rs = stmt.executeQuery(sql);
             if(rs.next()){
                 int count = rs.getInt(1);
+                if(check == true){
+                    JOptionPane.showMessageDialog(null,"Item already exists.");
+                    return;
+                }
                 if(count < getInventoryCapacity(inventoryID)){
-                    sql = "Insert into " +inventoryName+ " (inventoryID,itemName,description,quantity)values('"+inventoryID+"','"+i.getItemName()+"','"+i.getDescription()+"','"+i.getQuantity()+"')";
-                    stmt.executeUpdate(sql);
-                    JOptionPane.showMessageDialog(null,"Successfully added");
-                }else{
+                        sql = "Insert into " +inventoryName+ " (inventoryID,itemName,description,quantity)values('"+inventoryID+"','"+i.getItemName()+"','"+i.getDescription()+"','"+i.getQuantity()+"')";
+                        stmt.executeUpdate(sql);
+                        JOptionPane.showMessageDialog(null,"Successfully added");
+                } else{
                     JOptionPane.showMessageDialog(null,"Inventory Full");
                 }
             }
@@ -161,16 +166,46 @@ public class Connect {
         Statement stmt;
         String sql = null;
         ResultSet rs;
+        int limit = 0;
         
         try {
             stmt = conn.createStatement();
-            sql = "Select capacity from inventory where inventoryid = '" +inventoryid+"'";
+            sql = "Select inventorycapacity from inventory where inventoryid = '" +inventoryid+"'";
             rs = stmt.executeQuery(sql);
+
             if(rs.next()){
-                return rs.getInt(1);
+                String capacity = rs.getString(1);
+                if(capacity.equals("Basic Subscriber")){
+                    limit = 20;
+                }else{
+                    limit = 10000;
+                }
+                return limit;
             }
         } catch (SQLException e) {
+        
         }
-        return 0;
+        return limit;
     }
+
+   public boolean checkExisting(Item item, String inventoryname){
+    Statement stmt;
+    String sql;
+    ResultSet rs;
+
+    try {
+        stmt = conn.createStatement();
+        sql = "SELECT * FROM " + inventoryname + " WHERE itemname = '"+ item.getItemName()+"'";
+        rs = stmt.executeQuery(sql);
+        if (rs.next()) {
+            return true;
+        } else {
+            return false;
+        }
+        } catch (SQLException e) {
+            System.err.println("SQL error occurred: " + e.getMessage());
+        }
+        return false;
+    }
+
 }
