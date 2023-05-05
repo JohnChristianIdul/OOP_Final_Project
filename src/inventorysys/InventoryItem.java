@@ -31,6 +31,9 @@ public class InventoryItem extends javax.swing.JFrame {
         lblinventoryname.setText(inventoryName);
         inventory = inventoryName;
         inventoryid = inventoryID;
+        btnDelete.setEnabled(false);
+        jButton4.setEnabled(false);
+        btnHide.setEnabled(false);
     }
 
     public InventoryItem() {
@@ -64,6 +67,7 @@ public class InventoryItem extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         taDescription = new javax.swing.JTextArea();
         btnBack = new javax.swing.JToggleButton();
+        btnUnselect = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 153, 153));
@@ -142,6 +146,13 @@ public class InventoryItem extends javax.swing.JFrame {
             }
         });
 
+        btnUnselect.setText("UNSELECT");
+        btnUnselect.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUnselectActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -170,7 +181,8 @@ public class InventoryItem extends javax.swing.JFrame {
                                             .addComponent(btnAdd, javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(btnDelete, javax.swing.GroupLayout.Alignment.TRAILING))
                                         .addGap(38, 38, 38))
-                                    .addComponent(btnBack)))
+                                    .addComponent(btnBack)
+                                    .addComponent(btnUnselect)))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -207,6 +219,8 @@ public class InventoryItem extends javax.swing.JFrame {
                             .addComponent(btnSearch))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnShowHiddenItems)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnUnselect)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -256,31 +270,57 @@ public class InventoryItem extends javax.swing.JFrame {
         taDescription.setText("");
         tfQuantity.setText("");
         refreshTable();
+        btnDelete.setEnabled(false);
+        jButton4.setEnabled(false);
+        btnHide.setEnabled(false);
+        btnAdd.setEnabled(true);
     }//GEN-LAST:event_btnHideActionPerformed
 
     private void jTableItemsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTableItemsMouseClicked
         // TODO add your handling code here:
-        int index = jTableItems.getSelectedRow();
-        String Name = (String) jTableItems.getValueAt(index,1);
-        String description = (String) jTableItems.getValueAt(index,2);
-        String Quantity = (String) jTableItems.getValueAt(index,3);
-        tfItemName.setText(Name);
-        tfQuantity.setText(Quantity);
-        taDescription.setText(description);
+        if(jTableItems.getSelectionModel().isSelectionEmpty()){
+            btnDelete.setEnabled(false);
+            jButton4.setEnabled(false);
+            btnHide.setEnabled(false);
+        }else{
+            int index = jTableItems.getSelectedRow();
+            String Name = (String) jTableItems.getValueAt(index,1);
+            String description = (String) jTableItems.getValueAt(index,2);
+            String Quantity = (String) jTableItems.getValueAt(index,3);
+            tfItemName.setText(Name);
+            tfQuantity.setText(Quantity);
+            taDescription.setText(description);
+            btnDelete.setEnabled(true);
+            jButton4.setEnabled(true);
+            btnHide.setEnabled(true);
+            btnAdd.setEnabled(false);
+        }
     }//GEN-LAST:event_jTableItemsMouseClicked
 
     
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         // TODO add your handling code here:
-        String Name = tfItemName.getText();
-        String description = taDescription.getText();
-        int quantity = Integer.parseInt(tfQuantity.getText());
-        Item i = new Item(Name,quantity,description);
-        conn.addItem(i, inventory, inventoryid);
-        tfItemName.setText("");
-        taDescription.setText("");
-        tfQuantity.setText("");
-        refreshTable();
+        if(tfItemName.getText().isEmpty() || taDescription.getText().isEmpty() || tfQuantity.getText().isEmpty()){
+            JOptionPane.showMessageDialog(null,"Please fill in all fields");
+            return;
+        }
+        try{
+            if(jTableItems.getSelectionModel().isSelectionEmpty()){
+                String Name = tfItemName.getText();
+                String description = taDescription.getText();
+                int quantity = Integer.parseInt(tfQuantity.getText());
+                Item i = new Item(Name,quantity,description);
+                conn.addItem(i, inventory, inventoryid);
+                tfItemName.setText("");
+                taDescription.setText("");
+                tfQuantity.setText("");
+                refreshTable();
+            }else{
+                JOptionPane.showMessageDialog(null, "Item is already added!");
+            }
+        }catch(NumberFormatException e){
+            JOptionPane.showMessageDialog(null, "Please input a valid Quantity!");
+        }
     }//GEN-LAST:event_btnAddActionPerformed
 
     private void btnShowHiddenItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowHiddenItemsActionPerformed
@@ -292,7 +332,7 @@ public class InventoryItem extends javax.swing.JFrame {
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         // TODO add your handling code here:
-        if(!tfItemName.getText().equals("") && !tfQuantity.getText().equals("") && taDescription.getText().equals("")){
+        if(!tfItemName.getText().equals("") && !tfQuantity.getText().equals("") && !taDescription.getText().equals("")){
             String Name = tfItemName.getText();
             String description = taDescription.getText();
             int quantity = Integer.parseInt(tfQuantity.getText());
@@ -313,6 +353,18 @@ public class InventoryItem extends javax.swing.JFrame {
         show.show();
         this.dispose();
     }//GEN-LAST:event_btnBackActionPerformed
+
+    private void btnUnselectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUnselectActionPerformed
+        // TODO add your handling code here:
+        tfItemName.setText("");
+        taDescription.setText("");
+        tfQuantity.setText("");
+        btnDelete.setEnabled(false);
+        jButton4.setEnabled(false);
+        btnHide.setEnabled(false);
+        btnAdd.setEnabled(true);
+        refreshTable();
+    }//GEN-LAST:event_btnUnselectActionPerformed
 
     public void refreshTable(){
         tbl.setRowCount(0);
@@ -362,6 +414,7 @@ public class InventoryItem extends javax.swing.JFrame {
     private javax.swing.JButton btnHide;
     private javax.swing.JToggleButton btnSearch;
     private javax.swing.JButton btnShowHiddenItems;
+    private javax.swing.JButton btnUnselect;
     private javax.swing.JButton jButton4;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
