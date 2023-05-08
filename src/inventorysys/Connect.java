@@ -107,7 +107,7 @@ public class Connect {
                     JOptionPane.showMessageDialog(null,"Item already exists.");
                     return;
                 }
-                if(count < getInventoryCapacity(inventoryID)){
+                if(count < getInventoryCapacity(inventoryID) || getInventoryCapacity(inventoryID) == -1){
                         sql = "Insert into " +inventoryName+ " (inventoryID,itemName,description,quantity)values('"+inventoryID+"','"+i.getItemName()+"','"+i.getDescription()+"','"+i.getQuantity()+"')";
                         stmt.executeUpdate(sql);
                         JOptionPane.showMessageDialog(null,"Successfully added");
@@ -178,7 +178,7 @@ public class Connect {
                 if(capacity.equals("Basic Subscriber")){
                     limit = 20;
                 }else{
-                    limit = 10000;
+                    limit = -1;
                 }
                 return limit;
             }
@@ -188,24 +188,24 @@ public class Connect {
         return limit;
     }
 
-   public boolean checkExisting(Item item, String inventoryname){
-    Statement stmt;
-    String sql;
-    ResultSet rs;
+    public boolean checkExisting(Item item, String inventoryname){
+        Statement stmt;
+        String sql;
+        ResultSet rs;
 
-    try {
-        stmt = conn.createStatement();
-        sql = "SELECT * FROM " + inventoryname + " WHERE itemname = '"+ item.getItemName()+"'";
-        rs = stmt.executeQuery(sql);
-        if (rs.next()) {
-            return true;
-        } else {
-            return false;
-        }
-        } catch (SQLException e) {
+        try {
+            stmt = conn.createStatement();
+            sql = "SELECT * FROM " + inventoryname + " WHERE itemname = '"+ item.getItemName()+"'";
+            rs = stmt.executeQuery(sql);
+            if (rs.next()) {
+                return true;
+            } else {
+                return false;
+            }
+        }catch (SQLException e) {
             System.err.println("SQL error occurred: " + e.getMessage());
         }
-        return false;
-    }
+            return false;
+       }
 
 }
