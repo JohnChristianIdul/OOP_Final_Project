@@ -96,7 +96,6 @@ public class Connect {
         String sql=null;
         ResultSet rs;
         boolean check = checkExisting(i,inventoryName);
-        System.out.println(check);
         try {
             stmt = conn.createStatement();
             sql = "select count(*) from " + inventoryName;
