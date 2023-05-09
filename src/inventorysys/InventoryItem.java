@@ -20,20 +20,22 @@ public class InventoryItem extends javax.swing.JFrame {
     
     DefaultTableModel tbl;
     Connect conn;
-    String inventory;
+    String inventory_name;
+    int inventory_id;
     int inventoryid;
     
-    public InventoryItem(String inventoryName, int inventoryID) {
+    public InventoryItem(int inventoryID, String inventory_name) {
         initComponents();
         tbl = (DefaultTableModel) jTableItems.getModel();
         conn = new Connect();
-        displayTable(inventoryName);
-        lblinventoryname.setText(inventoryName);
-        inventory = inventoryName;
+        displayTable(inventoryID);
+        lblinventoryname.setText(inventory_name);
         inventoryid = inventoryID;
         btnDelete.setEnabled(false);
         jButton4.setEnabled(false);
         btnHide.setEnabled(false);
+        this.inventory_name = inventory_name;
+        this.inventory_id = inventoryID;
     }
 
     public InventoryItem() {
@@ -252,8 +254,8 @@ public class InventoryItem extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    public void displayTable(String inventoryName){
-        ArrayList<Item> item = conn.displayItem(inventoryName);
+    public void displayTable(int inventory_id){
+        ArrayList<Item> item = conn.displayItem(inventory_id);
         for(Item i : item){
             String data[]={Integer.toString(i.getItemID()),i.getItemName(), i.getDescription(), Integer.toString(i.getQuantity())};
             tbl.addRow(data);
@@ -261,11 +263,13 @@ public class InventoryItem extends javax.swing.JFrame {
     }
     private void btnHideActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHideActionPerformed
         // TODO add your handling code here:
+        int index = jTableItems.getSelectedRow();
+        int ID = Integer.parseInt((String) jTableItems.getValueAt(index, 0));
         String Name = tfItemName.getText();
         String description = taDescription.getText();
         int quantity = Integer.parseInt(tfQuantity.getText());
-        Item i = new Item(Name,quantity,description);
-        conn.hideItem(i, inventory);
+        Item i = new Item(ID,Name,quantity);
+        conn.hideItem(i);
         tfItemName.setText("");
         taDescription.setText("");
         tfQuantity.setText("");
@@ -300,17 +304,22 @@ public class InventoryItem extends javax.swing.JFrame {
     
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         // TODO add your handling code here:
-        if(tfItemName.getText().isEmpty() || taDescription.getText().isEmpty() || tfQuantity.getText().isEmpty()){
+        if(tfItemName.getText().isEmpty() || tfQuantity.getText().isEmpty()){
             JOptionPane.showMessageDialog(null,"Please fill in all fields");
             return;
         }
         try{
             if(jTableItems.getSelectionModel().isSelectionEmpty()){
                 String Name = tfItemName.getText();
-                String description = taDescription.getText();
                 int quantity = Integer.parseInt(tfQuantity.getText());
-                Item i = new Item(Name,quantity,description);
-                conn.addItem(i, inventory, inventoryid);
+                if(!taDescription.getText().isEmpty()){
+                    String description = taDescription.getText();
+                    Item i = new Item(Name,quantity,description);
+                    conn.addItem(i, inventory_name, inventoryid);
+                }else{
+                    Item i = new Item(Name,quantity,"");
+                    conn.addItem(i, inventory_name, inventoryid);
+                }
                 tfItemName.setText("");
                 taDescription.setText("");
                 tfQuantity.setText("");
@@ -325,19 +334,20 @@ public class InventoryItem extends javax.swing.JFrame {
 
     private void btnShowHiddenItemsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowHiddenItemsActionPerformed
         // TODO add your handling code here:
-        HiddenItems hide = new HiddenItems(inventory, inventoryid);
+        HiddenItems hide = new HiddenItems(inventory_name, inventory_id);
         hide.show();
         this.dispose();
     }//GEN-LAST:event_btnShowHiddenItemsActionPerformed
 
     private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
         // TODO add your handling code here:
-        if(!tfItemName.getText().equals("") && !tfQuantity.getText().equals("") && !taDescription.getText().equals("")){
+        if(!tfItemName.getText().equals("") && !tfQuantity.getText().equals("")){
+            int index = jTableItems.getSelectedRow();
+            int ItemId = Integer.parseInt((String) jTableItems.getValueAt(index, 0));
             String Name = tfItemName.getText();
-            String description = taDescription.getText();
             int quantity = Integer.parseInt(tfQuantity.getText());
-            Item i = new Item(Name,quantity,description);
-            conn.deleteItem(i, inventory);
+            Item i = new Item(ItemId,Name,quantity);
+            conn.deleteItem(i);
             tfItemName.setText("");
             taDescription.setText("");
             tfQuantity.setText("");
@@ -368,7 +378,7 @@ public class InventoryItem extends javax.swing.JFrame {
 
     public void refreshTable(){
         tbl.setRowCount(0);
-        displayTable(inventory);
+        displayTable(inventory_id);
     }
      
     /**
