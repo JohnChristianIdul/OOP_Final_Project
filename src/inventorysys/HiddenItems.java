@@ -19,21 +19,21 @@ public class HiddenItems extends javax.swing.JFrame {
     
     DefaultTableModel tbl;
     Connect conn;
-    String inventory;
+    String inventory_name;
     int inventoryid;
     
     
     public HiddenItems() {
     }
     
-    public HiddenItems(String inventoryName, int inventoryID) {
+    public HiddenItems(String inventory_name, int inventoryID) {
         initComponents();
-        lblInventoryname.setText(inventoryName);
+        lblInventoryname.setText(inventory_name);
         tbl = (DefaultTableModel) tblHidden.getModel();
         conn = new Connect();
-        displayTable(inventoryName);
+        displayTable(inventoryID);
+        this.inventory_name = inventory_name;
         this.inventoryid = inventoryID;
-        inventory = inventoryName;
     }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -208,8 +208,8 @@ public class HiddenItems extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    public void displayTable(String inventoryName){
-        ArrayList<Item> item = conn.hiddenItems(inventoryName);
+    public void displayTable(int inventoryID){
+        ArrayList<Item> item = conn.hiddenItems(inventoryID);
         for(Item i : item){
             String data[]={Integer.toString(i.getItemID()),i.getItemName(), i.getDescription(), Integer.toString(i.getQuantity())};
             tbl.addRow(data);
@@ -218,11 +218,13 @@ public class HiddenItems extends javax.swing.JFrame {
     
     private void btnShowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowActionPerformed
         // TODO add your handling code here:
+        int index = tblHidden.getSelectedRow();
+        int ID = Integer.parseInt((String) tblHidden.getValueAt(index,0));
         String Name = tfItemName.getText();
         String description = taDescription.getText();
         int quantity = Integer.parseInt(tfQuantity.getText());
-        Item i = new Item(Name,quantity,description);
-        conn.showItem(i, inventory);
+        Item i = new Item(ID,Name,quantity);
+        conn.showItem(i);
         tfItemName.setText("");
         taDescription.setText("");
         tfQuantity.setText("");
@@ -231,7 +233,7 @@ public class HiddenItems extends javax.swing.JFrame {
 
     private void btnBackActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBackActionPerformed
         // TODO add your handling code here:
-        InventoryItem showed = new InventoryItem(inventory, inventoryid);
+        InventoryItem showed = new InventoryItem(inventoryid, inventory_name);
         showed.show();
         this.dispose();
     }//GEN-LAST:event_btnBackActionPerformed
@@ -249,7 +251,7 @@ public class HiddenItems extends javax.swing.JFrame {
 
     public void refreshTable(){
         tbl.setRowCount(0);
-        displayTable(inventory);
+        displayTable(inventoryid);
     }
     
     /**
