@@ -21,16 +21,16 @@ public class Connect {
     //This comment is just to test if I can push and pull from the repository
     public Connect() {
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/inventorysystem", "root", "");
+            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/dbinventorysystem", "root", "");
         } catch (SQLException ex) {
             Logger.getLogger(Connect.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
     /*This method will display the item*/
-    public ArrayList<Item> displayItem(String inventoryName){
+    public ArrayList<Item> displayItem(int inventory_id){
         ArrayList<Item> item = new ArrayList<>();
-        String sql ="select * from " + inventoryName + " where status = 1";
+        String sql = "SELECT * FROM item WHERE inventoryID = '" + inventory_id + "' AND isVisible = 1";
         Statement stmt;
         ResultSet rs;
         
@@ -38,7 +38,7 @@ public class Connect {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sql);    
             while(rs.next()){
-              Item a = new Item(rs.getInt(1), rs.getInt(2), rs.getString(3),rs.getInt(5), rs.getString(4));
+              Item a = new Item(rs.getInt(1), rs.getString(2), rs.getString(3),rs.getInt(5), rs.getInt(4));
               item.add(a);
             }
 
@@ -49,9 +49,9 @@ public class Connect {
         return item;
     }
     
-    public ArrayList<Item> hiddenItems(String inventoryName){
+    public ArrayList<Item> hiddenItems(int inventory_id){
         ArrayList<Item> item = new ArrayList<>();
-        String sql ="select * from " + inventoryName + " where status = 0";
+        String sql ="select * from item where inventoryID = '"+inventory_id+"' AND isVisible = 0";
         Statement stmt;
         ResultSet rs;
         
@@ -59,7 +59,7 @@ public class Connect {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sql);    
             while(rs.next()){
-              Item a = new Item(rs.getInt(1), rs.getInt(2), rs.getString(3),rs.getInt(5), rs.getString(4));
+              Item a = new Item(rs.getInt(1), rs.getString(2), rs.getString(3),rs.getInt(5), rs.getInt(4));
               item.add(a);
             }
 
@@ -80,7 +80,7 @@ public class Connect {
             stmt = conn.createStatement();
             rs = stmt.executeQuery(sql);    
             while(rs.next()){
-              Inventory invent = new Inventory(rs.getInt(1), rs.getString(2));
+              Inventory invent = new Inventory(rs.getInt(1), rs.getString(3));
               it.add(invent);
             }
 
@@ -95,10 +95,10 @@ public class Connect {
         Statement stmt;
         String sql=null;
         ResultSet rs;
-        boolean check = checkExisting(i,inventoryName);
+        boolean check = checkExisting(i);
         try {
             stmt = conn.createStatement();
-            sql = "select count(*) from " + inventoryName;
+            sql = "select count(*) from item where inventoryID = " + inventoryID;
             rs = stmt.executeQuery(sql);
             if(rs.next()){
                 int count = rs.getInt(1);
@@ -107,7 +107,7 @@ public class Connect {
                     return;
                 }
                 if(count < getInventoryCapacity(inventoryID) || getInventoryCapacity(inventoryID) == -1){
-                        sql = "Insert into " +inventoryName+ " (inventoryID,itemName,description,quantity)values('"+inventoryID+"','"+i.getItemName()+"','"+i.getDescription()+"','"+i.getQuantity()+"')";
+                        sql = "Insert into item (itemName,itemDescription,itemQuantity,inventoryID)values('"+i.getItemName()+"','"+i.getDescription()+"',"+i.getQuantity()+","+inventoryID+")";
                         stmt.executeUpdate(sql);
                         JOptionPane.showMessageDialog(null,"Successfully added");
                 } else{
@@ -119,13 +119,13 @@ public class Connect {
         }
     }
     
-    public void deleteItem(Item item, String inventoryName){
+    public void deleteItem(Item item){
         Statement stmt;
         String sql = null;
         
         try{
             stmt = conn.createStatement();
-            sql = "delete from " +inventoryName+ " where itemname = '" +item.getItemName()+"'";
+            sql = "delete from item where itemID = '" +item.getItemID()+"'";
             stmt.executeUpdate(sql);
             JOptionPane.showMessageDialog(null,"Successfully deleted");
         }catch(SQLException e){
@@ -133,13 +133,13 @@ public class Connect {
         }
     }
     
-    public void hideItem(Item item, String inventoryName) {
+    public void hideItem(Item item) {
         Statement stmt;
         String sql = null;
         
         try {
             stmt = conn.createStatement();
-            sql = "UPDATE " + inventoryName + " SET status = 0 WHERE itemname = '" + item.getItemName() +"'";
+            sql = "UPDATE item SET isVisible = 0 WHERE itemID = '" + item.getItemID() +"'";
             stmt.executeUpdate(sql);
             JOptionPane.showMessageDialog(null, "Successfully Hidden");
         } catch (SQLException e) {
@@ -147,13 +147,13 @@ public class Connect {
         }
     }
     
-    public void showItem(Item item, String inventoryName) {
+    public void showItem(Item item) {
         Statement stmt;
         String sql = null;
         
         try {
             stmt = conn.createStatement();
-            sql = "UPDATE " + inventoryName + " SET status = 1 WHERE itemname = '" + item.getItemName() +"'";
+            sql = "UPDATE item SET isVisible = 1 WHERE itemID = '"+item.getItemID()+"'";
             stmt.executeUpdate(sql);
             JOptionPane.showMessageDialog(null, "Successfully displayed");
         } catch (SQLException e) {
@@ -166,14 +166,13 @@ public class Connect {
         String sql = null;
         ResultSet rs;
         int limit = 0;
-        
         try {
             stmt = conn.createStatement();
-            sql = "Select inventorycapacity from inventory where inventoryid = '" +inventoryid+"'";
+            sql = "Select inventoryID, inventory.subscriberID, subscriber.subscriptionType,subscription.inventoryLimit from inventory, subscriber, subscription where inventoryID = " + inventoryid +" AND inventory.subscriberID = subscriber.subscriberID AND subscriber.subscriptionType = subscription.subscriptionType;";
             rs = stmt.executeQuery(sql);
 
             if(rs.next()){
-                String capacity = rs.getString(1);
+                String capacity = rs.getString("subscriptionType");
                 if(capacity.equals("Basic Subscriber")){
                     limit = 20;
                 }else{
@@ -182,19 +181,19 @@ public class Connect {
                 return limit;
             }
         } catch (SQLException e) {
-        
+            
         }
         return limit;
     }
 
-    public boolean checkExisting(Item item, String inventoryname){
+    public boolean checkExisting(Item item){
         Statement stmt;
         String sql;
         ResultSet rs;
 
         try {
             stmt = conn.createStatement();
-            sql = "SELECT * FROM " + inventoryname + " WHERE itemname = '"+ item.getItemName()+"'";
+            sql = "SELECT * FROM item WHERE itemID = '"+ item.getItemID()+"'";
             rs = stmt.executeQuery(sql);
             if (rs.next()) {
                 return true;
