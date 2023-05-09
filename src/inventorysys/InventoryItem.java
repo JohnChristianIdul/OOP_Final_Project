@@ -4,9 +4,10 @@
  */
 package inventorysys;
 
-import java.util.ArrayList;
+import java.util.*;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+
 
 /**
  *
@@ -301,6 +302,14 @@ public class InventoryItem extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jTableItemsMouseClicked
 
+    public boolean isNumber(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(NumberFormatException e) {
+            return false;
+        }
+    }
     
     private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddActionPerformed
         // TODO add your handling code here:
@@ -311,7 +320,16 @@ public class InventoryItem extends javax.swing.JFrame {
         try{
             if(jTableItems.getSelectionModel().isSelectionEmpty()){
                 String Name = tfItemName.getText();
+                if(isNumber(Name)){
+                    throw new NumberFormatException();
+                }
                 int quantity = Integer.parseInt(tfQuantity.getText());
+                quantity = Integer.parseInt(tfQuantity.getText());
+                
+                if(quantity < 0){
+                    throw new NumberFormatException();
+                }
+                
                 if(!taDescription.getText().isEmpty()){
                     String description = taDescription.getText();
                     Item i = new Item(Name,quantity,description);
@@ -320,6 +338,7 @@ public class InventoryItem extends javax.swing.JFrame {
                     Item i = new Item(Name,quantity,"");
                     conn.addItem(i, inventory_name, inventoryid);
                 }
+                
                 tfItemName.setText("");
                 taDescription.setText("");
                 tfQuantity.setText("");
@@ -328,7 +347,7 @@ public class InventoryItem extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "Item is already added!");
             }
         }catch(NumberFormatException e){
-            JOptionPane.showMessageDialog(null, "Please input a valid Quantity!");
+            JOptionPane.showMessageDialog(null, "Please input a valid entry!");
         }
     }//GEN-LAST:event_btnAddActionPerformed
 
