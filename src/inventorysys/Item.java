@@ -27,14 +27,21 @@ public class Item {
         this.Description = Description;
     }
 
-    public Item(int Id,int inventoryID, String itemName, int quantity, String Description) {
+    public Item(int Id, String itemName,String Description, int quantity, int inventoryID) {
         this.itemID = Id;
-        this.inventoryID = inventoryID;
         this.itemName = itemName;
-        this.Quantity = quantity;
+        this.inventoryID = inventoryID;
         this.Description = Description;
+        this.Quantity = quantity;
     }
 
+    public Item(int itemID, String itemName, int Quantity) {
+        this.itemID = itemID;
+        this.itemName = itemName;
+        this.Quantity = Quantity;
+    }
+
+    
     public int getItemID() {
         return itemID;
     }
