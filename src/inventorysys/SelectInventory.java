@@ -24,7 +24,6 @@ public class SelectInventory extends javax.swing.JFrame {
         tbl = (DefaultTableModel) tableInventory.getModel();
         conn = new Connect();
         displayTable();
-        btnLoad.setEnabled(false);
     }
     
     /**
@@ -137,16 +136,12 @@ public class SelectInventory extends javax.swing.JFrame {
 
     private void tableInventoryMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableInventoryMouseClicked
         // TODO add your handling code here:
-        if(!tableInventory.getSelectionModel().isSelectionEmpty()){
-            btnLoad.setEnabled(true);
-            int index = tableInventory.getSelectedRow();
-            String ID = (String) tableInventory.getValueAt(index,0);
-            String Name = (String) tableInventory.getValueAt(index,1);
-            tfInventoryID.setText(ID);
-            tfInventoryName.setText(Name);
-        }else{
-            btnLoad.setEnabled(false);
-        }
+        btnLoad.setEnabled(true);
+        int index = tableInventory.getSelectedRow();
+        String ID = (String) tableInventory.getValueAt(index,0);
+        String Name = (String) tableInventory.getValueAt(index,1);
+        tfInventoryID.setText(ID);
+        tfInventoryName.setText(Name);
         
     }//GEN-LAST:event_tableInventoryMouseClicked
 
