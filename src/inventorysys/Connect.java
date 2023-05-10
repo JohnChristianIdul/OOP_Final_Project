@@ -96,6 +96,7 @@ public class Connect {
         String sql=null;
         ResultSet rs;
         boolean check = checkExisting(i);
+        System.out.println(check);
         try {
             stmt = conn.createStatement();
             sql = "select count(*) from item where inventoryID = " + inventoryID;
@@ -105,8 +106,7 @@ public class Connect {
                 if(check == true){
                     JOptionPane.showMessageDialog(null,"Item already exists.");
                     return;
-                }
-                if(count < getInventoryCapacity(inventoryID) || getInventoryCapacity(inventoryID) == -1){
+                } else if(count < getInventoryCapacity(inventoryID) || getInventoryCapacity(inventoryID) == -1){
                         sql = "Insert into item (itemName,itemDescription,itemQuantity,inventoryID)values('"+i.getItemName()+"','"+i.getDescription()+"',"+i.getQuantity()+","+inventoryID+")";
                         stmt.executeUpdate(sql);
                         JOptionPane.showMessageDialog(null,"Successfully added");
@@ -193,7 +193,7 @@ public class Connect {
 
         try {
             stmt = conn.createStatement();
-            sql = "SELECT * FROM item WHERE itemID = '"+ item.getItemID()+"'";
+            sql = "SELECT * FROM item WHERE itemName = '"+ item.getItemName()+"'";
             rs = stmt.executeQuery(sql);
             if (rs.next()) {
                 return true;
