@@ -101,8 +101,11 @@ public class Connect {
             stmt = conn.createStatement();
             sql = "select count(*) from item where inventoryID = " + inventoryID;
             rs = stmt.executeQuery(sql);
+            int limit = getInventoryCapacity(inventoryID);
+            System.out.println(limit);
             if(rs.next()){
                 int count = rs.getInt(1);
+                System.out.println(count);
                 if(check == true){
                     JOptionPane.showMessageDialog(null,"Item already exists.");
                     return;
@@ -173,17 +176,18 @@ public class Connect {
 
             if(rs.next()){
                 String capacity = rs.getString("subscriptionType");
-                if(capacity.equals("Basic Subscriber")){
+                if(capacity.equals("Basic")){
                     limit = 20;
+                    return limit;
                 }else{
                     limit = -1;
+                    return limit;
                 }
-                return limit;
             }
         } catch (SQLException e) {
             
         }
-        return limit;
+        return 0;
     }
 
     public boolean checkExisting(Item item){
@@ -206,4 +210,80 @@ public class Connect {
             return false;
        }
 
+    ArrayList<Item1> displayItem() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    public ArrayList<Item1> displaySearchItem(String searchItem) throws SQLException {
+    ArrayList<Item1> item = new ArrayList<>();
+    boolean flag = false;
+    try {
+        int id = Integer.parseInt(searchItem);
+        String sql = "select * from item where itemID = '" + id + "' ";
+        Statement stmt;
+        ResultSet rs;
+
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        while (rs.next()) {
+            Item1 a;
+            a = new Item1(rs.getInt(1),rs.getString(2),rs.getString(3),rs.getInt(4),rs.getInt(5),rs.getInt(6));
+            item.add(a);
+            flag = true;
+        }
+        if(flag){
+            JOptionPane.showMessageDialog(null, "Item is found");
+        }else{
+            JOptionPane.showMessageDialog(null, "Item not found");
+        }
+    } catch (NumberFormatException e) {
+        String sql = "select * from item where itemName like '%" + searchItem + "%'";
+        Statement stmt;
+        ResultSet rs;
+
+        stmt = conn.createStatement();
+        rs = stmt.executeQuery(sql);
+        while (rs.next()) {
+            Item1 a;
+            a = new Item1(rs.getInt(1),rs.getString(2),rs.getString(3),rs.getInt(4),rs.getInt(5),rs.getInt(6));
+            item.add(a);
+            flag = true;
+        }
+        if(flag){
+            JOptionPane.showMessageDialog(null, "Item is found");
+        }else{
+            
+            JOptionPane.showMessageDialog(null, "Item not found");
+        }
+    } catch (SQLException e) {
+        Logger.getLogger(Connect.class.getName()).log(Level.SEVERE, null, e);
+    }
+    return item; // Return the 'item' ArrayList instead of 'null'
+    }
+    
+    public void updateItem(String origname, String origDescription,int origQuantity,String name, String description1, int quantity1) {
+    String sql1 = "SELECT * FROM item WHERE itemname = '" + name + "'";
+    String sql = "UPDATE item SET itemname = '" + name + "', itemdescription = '" + description1 + "', itemquantity = " + quantity1 + " WHERE itemname = '" + origname + "'";
+    Statement stmt;
+
+    try {
+        stmt = conn.createStatement();
+        ResultSet resultSet = stmt.executeQuery(sql1);
+        
+        
+        if(origname.equals(name) && (origDescription == null || origDescription.equals(description1)) && origQuantity == quantity1){
+            JOptionPane.showMessageDialog(null, "Nothing changed");
+        }
+        else if (!resultSet.next() || origname.equals(name)) { // If there's no record with the new name, proceed with the update
+            stmt.executeUpdate(sql);
+            JOptionPane.showMessageDialog(null,"Item updated!");
+        }else{
+            JOptionPane.showMessageDialog(null, "Name already exist!");
+        }
+
+    } catch (SQLException ex) {
+        Logger.getLogger(Connect.class.getName()).log(Level.SEVERE, null, ex);
+    }
+}      
+    
 }
