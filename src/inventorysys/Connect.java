@@ -210,8 +210,27 @@ public class Connect {
             return false;
        }
 
-    ArrayList<Item1> displayItem() {
-        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    public ArrayList<Item1> displayItem(){
+        ArrayList<Item1> item = new ArrayList<>();
+        String sql ="select * from item";
+        Statement stmt;
+        ResultSet rs;
+        
+        try {
+            stmt = conn.createStatement();
+            rs = stmt.executeQuery(sql);
+            while(rs.next()){
+              Item1 a;
+              a = new Item1(rs.getInt(1),rs.getString(2),rs.getString(3),rs.getInt(4),rs.getInt(5),rs.getInt(6));
+              item.add(a);
+            }
+            
+            
+        } catch (SQLException ex) {
+            Logger.getLogger(Connect.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return item;
     }
 
     public ArrayList<Item1> displaySearchItem(String searchItem) throws SQLException {
