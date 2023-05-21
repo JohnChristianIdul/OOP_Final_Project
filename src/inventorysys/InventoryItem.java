@@ -4,7 +4,10 @@
  */
 package inventorysys;
 
+import java.sql.SQLException;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -27,13 +30,15 @@ public class InventoryItem extends javax.swing.JFrame {
     
     public InventoryItem(int inventoryID, String inventory_name) {
         initComponents();
+        String id = Integer.toString(inventoryID);
         tbl = (DefaultTableModel) jTableItems.getModel();
         conn = new Connect();
         displayTable(inventoryID);
         lblinventoryname.setText(inventory_name);
+        lblInventoryID.setText(id);
         inventoryid = inventoryID;
         btnDelete.setEnabled(false);
-        jButton4.setEnabled(false);
+        btnUpdate.setEnabled(false);
         btnHide.setEnabled(false);
         this.inventory_name = inventory_name;
         this.inventory_id = inventoryID;
@@ -63,7 +68,7 @@ public class InventoryItem extends javax.swing.JFrame {
         btnAdd = new javax.swing.JButton();
         btnDelete = new javax.swing.JButton();
         btnHide = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
+        btnUpdate = new javax.swing.JButton();
         jLabel5 = new javax.swing.JLabel();
         lblinventoryname = new javax.swing.JLabel();
         btnShowHiddenItems = new javax.swing.JButton();
@@ -71,6 +76,9 @@ public class InventoryItem extends javax.swing.JFrame {
         taDescription = new javax.swing.JTextArea();
         btnBack = new javax.swing.JToggleButton();
         btnUnselect = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        lblInventoryID = new javax.swing.JLabel();
+        btnRefresh = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(255, 153, 153));
@@ -99,6 +107,11 @@ public class InventoryItem extends javax.swing.JFrame {
         jScrollPane1.setViewportView(jTableItems);
 
         btnSearch.setText("SEARCH");
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
+            }
+        });
 
         jLabel1.setText("Item Name");
 
@@ -127,9 +140,14 @@ public class InventoryItem extends javax.swing.JFrame {
             }
         });
 
-        jButton4.setText("UPDATE");
+        btnUpdate.setText("UPDATE");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
 
-        jLabel5.setText("Inventory Name");
+        jLabel5.setText("Inventory Name:");
 
         btnShowHiddenItems.setText("CHECK HIDDEN ITEMS");
         btnShowHiddenItems.addActionListener(new java.awt.event.ActionListener() {
@@ -156,6 +174,15 @@ public class InventoryItem extends javax.swing.JFrame {
             }
         });
 
+        jLabel4.setText("Inventory ID:");
+
+        btnRefresh.setText("REFRESH");
+        btnRefresh.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRefreshActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -164,7 +191,12 @@ public class InventoryItem extends javax.swing.JFrame {
                 .addGap(15, 15, 15)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addGap(28, 28, 28)
+                                .addComponent(lblInventoryID, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(45, 45, 45)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -174,18 +206,22 @@ public class InventoryItem extends javax.swing.JFrame {
                                         .addComponent(tfSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 150, javax.swing.GroupLayout.PREFERRED_SIZE)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(btnSearch))
-                                    .addComponent(btnShowHiddenItems)
                                     .addGroup(layout.createSequentialGroup()
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(btnHide)
-                                            .addComponent(jButton4))
+                                            .addComponent(btnUpdate))
                                         .addGap(23, 23, 23)
                                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                             .addComponent(btnAdd, javax.swing.GroupLayout.Alignment.TRAILING)
                                             .addComponent(btnDelete, javax.swing.GroupLayout.Alignment.TRAILING))
                                         .addGap(38, 38, 38))
                                     .addComponent(btnBack)
-                                    .addComponent(btnUnselect)))
+                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(btnShowHiddenItems, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                            .addComponent(btnRefresh)
+                                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                            .addComponent(btnUnselect)))))
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
@@ -215,16 +251,21 @@ public class InventoryItem extends javax.swing.JFrame {
                         .addComponent(lblinventoryname, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(btnBack, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblInventoryID, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(tfSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnSearch)
+                        .addComponent(jLabel4)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(tfSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(btnSearch))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnShowHiddenItems)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnUnselect)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(btnUnselect)
+                            .addComponent(btnRefresh))
+                        .addGap(29, 29, 29)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(jLabel2)
@@ -247,8 +288,8 @@ public class InventoryItem extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(btnHide)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jButton4))))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 370, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(btnUpdate))))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addGap(24, 24, 24))
         );
 
@@ -262,6 +303,28 @@ public class InventoryItem extends javax.swing.JFrame {
             tbl.addRow(data);
         }
     }
+    
+    public void displayTable(){
+        ArrayList<Item1> item = conn.displayItem();
+        for(Item1 c : item){
+            String [] data = {Integer.toString(c.getItemID()),c.getItemName(),c.getItemDescription(),Integer.toString(c.getItemQuantity())};
+            tbl.addRow(data);
+        }
+    }
+    
+    public void displaySearchTable(String tableName, String searchItem) throws SQLException{
+        ArrayList<Item1> item = conn.displaySearchItem(searchItem);
+        for(Item1 c : item){
+            String [] data = {Integer.toString(c.getItemID()),c.getItemName(),c.getItemDescription(),Integer.toString(c.getItemQuantity())};
+            tbl.addRow(data);
+        }
+    }
+    
+    public void refreshTable(String tableName, String searchItem) throws SQLException{
+        tbl.setRowCount(0);
+        displaySearchTable(tableName,searchItem);
+    }
+    
     private void btnHideActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnHideActionPerformed
         // TODO add your handling code here:
         int index = jTableItems.getSelectedRow();
@@ -276,7 +339,7 @@ public class InventoryItem extends javax.swing.JFrame {
         tfQuantity.setText("");
         refreshTable();
         btnDelete.setEnabled(false);
-        jButton4.setEnabled(false);
+        btnUpdate.setEnabled(false);
         btnHide.setEnabled(false);
         btnAdd.setEnabled(true);
     }//GEN-LAST:event_btnHideActionPerformed
@@ -285,7 +348,7 @@ public class InventoryItem extends javax.swing.JFrame {
         // TODO add your handling code here:
         if(jTableItems.getSelectionModel().isSelectionEmpty()){
             btnDelete.setEnabled(false);
-            jButton4.setEnabled(false);
+            btnUpdate.setEnabled(false);
             btnHide.setEnabled(false);
         }else{
             int index = jTableItems.getSelectedRow();
@@ -296,7 +359,7 @@ public class InventoryItem extends javax.swing.JFrame {
             tfQuantity.setText(Quantity);
             taDescription.setText(description);
             btnDelete.setEnabled(true);
-            jButton4.setEnabled(true);
+            btnUpdate.setEnabled(true);
             btnHide.setEnabled(true);
             btnAdd.setEnabled(false);
         }
@@ -389,11 +452,72 @@ public class InventoryItem extends javax.swing.JFrame {
         taDescription.setText("");
         tfQuantity.setText("");
         btnDelete.setEnabled(false);
-        jButton4.setEnabled(false);
+        btnUpdate.setEnabled(false);
         btnHide.setEnabled(false);
         btnAdd.setEnabled(true);
         refreshTable();
     }//GEN-LAST:event_btnUnselectActionPerformed
+
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        // TODO add your handling code here:
+        String searchItem = (String)tfSearch.getText();
+        if(searchItem.equals("")){
+            tbl.setRowCount(0);
+            displayTable();
+            JOptionPane.showMessageDialog(null,"Blank or Empty cannot be searched");
+        }else{
+            try {
+                refreshTable(inventory_name,searchItem);
+            } catch (SQLException ex) {
+                Logger.getLogger(InventoryItem.class.getName()).log(Level.SEVERE, null, ex);
+            }
+           
+        }
+    }//GEN-LAST:event_btnSearchActionPerformed
+
+    private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
+        // TODO add your handling code here:
+        btnUpdate.setEnabled(false);
+        tbl.setRowCount(0);
+        if(jTableItems.getModel().getRowCount()==0){
+            displayTable();
+        }else{
+            jTableItems.clearSelection();
+        }
+        tfItemName.setText("");
+        taDescription.setText("");
+        tfQuantity.setText("");
+        tfSearch.setText("");
+    }//GEN-LAST:event_btnRefreshActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        // TODO add your handling code here:
+        int index = jTableItems.getSelectedRow();
+            String origname = (String) jTableItems.getValueAt(index, 1);
+            String origDescription = (String) jTableItems.getValueAt(index, 2);
+            String origQuantityStr = (String) jTableItems.getValueAt(index, 3);
+            int origQuantity = Integer.parseInt(origQuantityStr);
+
+            String item1 = tfItemName.getText();
+            String description1 = taDescription.getText();
+            int quantity1 = Integer.parseInt(tfQuantity.getText());
+            if(quantity1 < 0 ){
+                tfQuantity.setText(origQuantityStr);
+                JOptionPane.showMessageDialog(null, "Quantity should not be less than zero!");
+            }else if(isNumber(item1) || isNumber(description1)){
+                tfItemName.setText(origname);
+                taDescription.setText(origDescription);
+                JOptionPane.showMessageDialog(null, "Name or Description should not be numeric!");
+            }else{
+                conn.updateItem(origname,origDescription,origQuantity,item1,description1,quantity1);
+                tbl.setRowCount(0);
+                displayTable();
+                tfItemName.setText("");
+                taDescription.setText("");
+                tfQuantity.setText("");
+                btnUpdate.setEnabled(false);
+            }
+    }//GEN-LAST:event_btnUpdateActionPerformed
 
     public void refreshTable(){
         tbl.setRowCount(0);
@@ -441,17 +565,20 @@ public class InventoryItem extends javax.swing.JFrame {
     private javax.swing.JToggleButton btnBack;
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnHide;
+    private javax.swing.JButton btnRefresh;
     private javax.swing.JToggleButton btnSearch;
     private javax.swing.JButton btnShowHiddenItems;
     private javax.swing.JButton btnUnselect;
-    private javax.swing.JButton jButton4;
+    private javax.swing.JButton btnUpdate;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTableItems;
+    private javax.swing.JLabel lblInventoryID;
     private javax.swing.JLabel lblinventoryname;
     private javax.swing.JTextArea taDescription;
     private javax.swing.JTextField tfItemName;
